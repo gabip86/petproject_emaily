@@ -1,17 +1,39 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import dotenv from "dotenv";
+import passport from "passport";
+import passportGoogle from "passport-google-oauth20";
+const GoogleStrategy = passportGoogle.Strategy;
+import { googleClientID, googleClientSecret } from "./config/keys";
 
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT;
 
-app.get("/", async (req: Request, res: Response): Promise<Response> => {
-  return res.status(200).send({
-    message: "Hello World!!!",
-  });
-});
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: googleClientID,
+      clientSecret: googleClientSecret,
+      callbackURL: "/auth/google/callback",
+    },
+    (accessToken, refreshToken, profile) => {
+      console.log("accessToken: ", accessToken);
+      console.log("refreshToken: ", refreshToken);
+      console.log("profile: ", profile);
+    }
+  )
+);
 
-app.listen(port, (): void => {
-  console.log(`[server]: server is running at http://localhost:${port}`);
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get("/auth/google/callback", passport.authenticate("google"));
+
+const PORT = process.env.PORT;
+app.listen(PORT, (): void => {
+  console.log(`[Server]: server is running at http://localhost:${PORT}`);
 });
