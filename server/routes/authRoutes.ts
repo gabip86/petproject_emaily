@@ -10,4 +10,13 @@ export const authRoutes = (app: Express) => {
   );
 
   app.get("/auth/google/callback", passport.authenticate("google"));
+
+  app.get("/api/logout", (req, res, done) => {
+    req.logout(done);
+    res.send(req.user);
+  });
+
+  app.get("/api/current_user", (req, res) => {
+    res.send(req.user);
+  });
 };
